@@ -55,3 +55,54 @@ def bin_to_ascii(bin_code):
     ascii_string += chr(int(bin_code[i:i+8],2))
     i += 8
   return ascii_string
+  
+def ascii_to_bin(ascii_string):
+  
+
+def frequency_score(code):
+  letter_frequencies = {
+    ' ': 18.28,
+    'e': 10.26, 
+    't': 7.52,
+    'a': 6.53,
+    'o': 6.15,
+    'n': 5.71,
+    's': 5.67,
+    'r': 4.99,
+    'h': 4.98,
+    'd': 3.28,
+    'l': 3.31,
+    'u': 2.27,
+    'c': 2.23,
+    'm': 2.03,
+    'f': 1.98,
+    'w': 1.70,
+    'g': 1.62,
+    'p': 1.50,
+    'y': 1.42,
+    'b': 1.26,
+    'v': 0.80,
+    'k': 0.56,
+    'x': 0.14,
+    'j': 0.10,
+    'q': 0.08,
+    'z': 0.05
+  }
+  code_frequencies = {}
+  for char in code.lower():
+    if char in code_frequencies:
+      code_frequencies[char] += 1
+    else:
+      code_frequencies[char] = 1
+  score = 0
+  for char in code_frequencies.keys():
+    if char in letter_frequencies:
+      score += abs(letter_frequencies[char] - 100*(code_frequencies[letter]/len(code)))
+    else:
+      score += 100*(code_frequencies[letter]/len(code))
+  return score
+
+code = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+bin_code_1 = hex_to_binary(code)
+for a in range(255):
+  test_string = chr(a)*len(code)
