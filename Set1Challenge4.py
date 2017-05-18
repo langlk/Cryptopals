@@ -109,9 +109,9 @@ def frequency_score(code):
   return code_score
 
 codes = open('Challenge4Codes.txt', 'r')
+scores = {} # Stores scores of each line, and each character xOR'd against
 for line in codes:
   bin_code_string = hex_to_binary(line)
-  scores = {} # Stores scores of each character xOR'd against
   """
   XORs the code against string of one character.
   Then changes back to an ascii string, scores the character frequency, and stores.
@@ -123,6 +123,10 @@ for line in codes:
     result_string = bin_to_ascii(result_string)
     scores[frequency_score(result_string)] = [line,chr(a),result_string] 
     # storing the scores as the keys of this dictionary right now, but this is probably a terrible idea if two codekeys ever produce the same score
-for i in range(10):
-  print(scores[max(scores.keys())]) 
-  del(scores[max(scores.keys())])
+
+max_score = scores[max(scores.keys())]
+print("Line: " + max_score[0])
+print("Key: " + max_score[1])
+print("Score: " + str(max(scores.keys())))
+print("Decoded: " + max_score[2])
+
