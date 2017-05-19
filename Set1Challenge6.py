@@ -133,14 +133,33 @@ def edit_distance(str1,str2): # finds edit distance between 2 equal-length binar
 		x += 1 
 	return distance
 
-codes = open('Challenge5Codes.txt', 'r')
+#SO NOT FINISHED YET
+def make_blocks(code_string,keysize): # code_string is binary, keysize in bytes
+  block_length = keysize*8 # keysize is in bytes, change to bits
+  keysize_blocks = [code_string[i:i+block_length] for i in range(0, len(code_string), block_length)]
+  transposed_blocks = []
+  
 
+codes = open('Challenge6Codes.txt', 'r')
 code = ""
 for line in codes:
   code += line[0:-1]
 binary_code = base64_to_binary(code)
 
+print(binary_code)
 # Get Hamming Distances  
-normalized_hamming_distances = []  
+normalized_edit_distances = []  
 for keysize in range(2,41):
-  pass 
+  chunk_one = binary_code[0:keysize*8]
+  chunk_two = binary_code[keysize*8:keysize*8*2]
+  edit_dist = edit_distance(chunk_one,chunk_two)
+  normalized_edit_distances.append(edit_dist/float(keysize))
+# Get 3 keysizes with the smallest Hamming Distance
+keysizes = []
+for i in range(3):
+  min_distance_key = normalized_edit_distances.index(min(normalized_edit_distances)) + 2 
+  keysizes.append(min_distance_key)
+  normalized_edit_distances[min_distance_key - 2] = 100
+
+for keysize in keysizes:
+  make_blocks(binary_code,keysize) 
