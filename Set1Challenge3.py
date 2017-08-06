@@ -1,125 +1,68 @@
 # Cryptopals
 # Set 1 Challenge 3
 
-def hex_to_binary(hex_code): # Takes hex code as string, returns binary as string
-  bin_code = ""
-  i = 0
-  while i+2 <= len(hex_code):
-    temp_code = str(bin(int(hex_code[i:i+2], 16)))
-    temp_code = temp_code[2:len(temp_code)] # Removes the binary prefix
-    while len(temp_code) < 8: # Standardizes length
-      temp_code = "0" + temp_code
-    bin_code += temp_code
-    i += 2
-  return bin_code
-
-def binary_to_base64(bin_code): # Takes binary as string, returns base64 code as string
-  i = 0
-  base64_translator = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
-  base64_code = ""
-  while i+6 <= len(bin_code):
-      b = int(bin_code[i:i+6], 2)
-      base64_code += base64_translator[b:b+1]
-      i += 6
-  return base64_code
-  
-def binary_to_hex(bin_code): # Takes binary as string, returns hex code as string
-    i = 0
-    hex_code = ""
-    while i+8 <= len(bin_code):
-        temp_code = str(hex(int(bin_code[i:i+8],2)))
-        temp_code = temp_code[2:len(temp_code)] # Remove prefix
-        while len(temp_code) < 2: # standardizes length
-            temp_code = "0" + temp_code
-        hex_code += temp_code
-        i += 8
-    return hex_code
-    
-def binary_xOR(str1,str2): # takes two binary code strings, returns XOR of them as string
-    a = 0
-    newcode = ""
-    while a+1 <= len(str1):
-        b1 = str1[a]
-        b2 = str2[a]
-        if b1 != b2:
-            newcode += "1"
-        else:
-            newcode += "0"
-        a += 1
-    return newcode
-    
-def bin_to_ascii(bin_code): # changes binary code string to ascii string
-  i = 0
-  ascii_string = ""
-  while i+8 <= len(bin_code):
-    ascii_string += chr(int(bin_code[i:i+8],2))
-    i += 8
-  return ascii_string
-  
-def ascii_to_bin(ascii_string): # changes ascii string to binary string
-  bin_code = ""
-  for char in ascii_string:
-    temp_code = str(bin(ord(char)))
-    temp_code = temp_code[2:len(temp_code)] # Removes the binary prefix
-    while len(temp_code) < 8: # Standardizes length
-      temp_code = "0" + temp_code
-    bin_code += temp_code
-  return bin_code
+def binary_xOR(byte_code1,byte_code2): # takes two bytes objects, returns XOR of them as bytes object
+    result = b''
+    for i in range(len(byte_code1)):
+        result += bytes([byte_code1[i] ^ byte_code2[i]])
+    return result
 
 def frequency_score(code):
   """
-  Scores letter frequency of an ascii string. Starts with code_score = 1, then for each character in the code, multiplies the code_score by the frequency of that letter. If not a space or a letter, multiplies by .0001 to penalize weird characters. 
+  Scores letter frequency of an code represented as a bytes object. Starts with code_score = 1, then for each character in the code, multiplies the code_score by the frequency of that letter. If not a space or a letter, multiplies by .0001 to penalize weird characters.
   Higher Frequency Score is better.
-  Only works for strings of the same length.
+  Only works for codes of the same length.
   """
   letter_frequencies = {
-    ' ': .1828,
-    'e': .1026, 
-    't': .0752,
-    'a': .0653,
-    'o': .0615,
-    'n': .0571,
-    's': .0567,
-    'r': .0499,
-    'h': .0498,
-    'd': .0328,
-    'l': .0331,
-    'u': .0227,
-    'c': .0223,
-    'm': .0203,
-    'f': .0198,
-    'w': .0170,
-    'g': .0162,
-    'p': .0150,
-    'y': .0142,
-    'b': .0126,
-    'v': 0.0080,
-    'k': 0.0056,
-    'x': 0.0014,
-    'j': 0.0010,
-    'q': 0.0008,
-    'z': 0.0005
+    b' ': .1828,
+    b'e': .1026,
+    b't': .0752,
+    b'a': .0653,
+    b'o': .0615,
+    b'n': .0571,
+    b's': .0567,
+    b'r': .0499,
+    b'h': .0498,
+    b'd': .0328,
+    b'l': .0331,
+    b'u': .0227,
+    b'c': .0223,
+    b'm': .0203,
+    b'f': .0198,
+    b'w': .0170,
+    b'g': .0162,
+    b'p': .0150,
+    b'y': .0142,
+    b'b': .0126,
+    b'v': 0.0080,
+    b'k': 0.0056,
+    b'x': 0.0014,
+    b'j': 0.0010,
+    b'q': 0.0008,
+    b'z': 0.0005
   }
   code_score = 1
-  for char in code.lower(): # Checks as lowercase
+  code = code.lower() # Checks as lowercase
+  for i in range(len(code)):
+    char = bytes([code[i]])
     if char in letter_frequencies:
       code_score *= letter_frequencies[char]
     else: # Some random character/punctuation
       code_score *= 0.0001
   return code_score
 
-start_code = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
-bin_code_string = hex_to_binary(start_code)
+hex_code = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+bytes_code = bytes.fromhex(hex_code)
 scores = {} # Stores scores of each character xOR'd against
+
 """
-XORs the code against string of one character.
-Then changes back to an ascii string, scores the character frequency, and stores.
+XORs the code against byte object made of one character.
+Then scores the character frequency, and stores.
 """
 for a in range(255): # not sure if only checking through 255 will work for ch6
-  test_string = chr(a)*len(start_code)
-  test_string = ascii_to_bin(test_string)
-  result_string = binary_xOR(bin_code_string,test_string)
-  result_string = bin_to_ascii(result_string)
-  scores[frequency_score(result_string)] = [chr(a),result_string] 
+  decoder_bytes = bytes([a])*len(bytes_code)
+  result_bytes = binary_xOR(bytes_code,decoder_bytes)
+  score = frequency_score(result_bytes)
+  scores[score] = [chr(a),result_bytes]
   # storing the scores as the keys of this dictionary right now, but this is probably a terrible idea if two codekeys ever produce the same score
-print(scores[max(scores.keys())]) 
+print(scores[max(scores.keys())])
