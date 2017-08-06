@@ -72,7 +72,8 @@ def edit_distance(bytes1,bytes2): # finds edit distance between 2 equal-length b
 test1 = b"this is a test"
 test2 = b"wokka wokka!!!"
 print(edit_distance(test2,test1))
-# #SO NOT FINISHED YET
+
+#SO NOT FINISHED YET
 # def make_blocks(code_string,keysize): # code_string is binary, keysize in bytes
 #   block_length = keysize*8 # keysize is in bytes, change to bits
 #   keysize_blocks = [code_string[i:i+block_length] for i in range(0, len(code_string), block_length)]
@@ -82,7 +83,7 @@ print(edit_distance(test2,test1))
 # codes = open('Challenge6Codes.txt', 'r')
 # code = ""
 # for line in codes:
-#   code += line[0:-1]
+#     code += line[0:-1]
 # binary_code = base64_to_binary(code)
 #
 # print(binary_code)
