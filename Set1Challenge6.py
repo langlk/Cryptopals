@@ -70,6 +70,21 @@ def edit_distance(bytes1,bytes2): # finds edit distance between 2 equal-length b
             distance += 1
     return distance
 
+# Returns list of bytes objects where the first object is the first byte of
+# every keysize block, the second object is the second byte, etc
+def make_transposed_blocks(bytes_code, keysize):
+    transposed_blocks = [b""] * keysize
+    i = 0
+    j = 0
+    while i < len(bytes_code):
+        transposed_blocks[j] += bytes([bytes_code[i]])
+        i += 1
+        if (j < keysize - 1):
+            j += 1
+        else:
+            j = 0
+    return transposed_blocks
+
 # Open file, change lines from b64 to bytes
 b64_codes = open('Challenge6Code.txt', 'r')
 bytes_code = b""
@@ -92,11 +107,6 @@ for i in range(3):
     best_keys.append(min_distance_key)
     normalized_edit_distances[min_distance_key - 2] = 100
 
-#SO NOT FINISHED YET
-# def make_blocks(code_string,keysize): # code_string is binary, keysize in bytes
-#   block_length = keysize*8 # keysize is in bytes, change to bits
-#   keysize_blocks = [code_string[i:i+block_length] for i in range(0, len(code_string), block_length)]
-#   transposed_blocks = []
-
-# for keysize in keysizes:
-#   make_blocks(binary_code,keysize)
+for key in best_keys:
+    blocks = make_transposed_blocks(bytes_code, key)
+    
