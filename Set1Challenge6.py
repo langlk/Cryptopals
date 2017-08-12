@@ -1,8 +1,10 @@
 # Cryptopals
 # Set 1 Challenge 6
 import base64
+import string
 
-def binary_xOR(byte_code1,byte_code2): # takes two bytes objects, returns XOR of them as bytes object
+# takes two bytes objects, returns XOR of them as bytes object
+def binary_xOR(byte_code1,byte_code2):
     result = b''
     for i in range(len(byte_code1)):
         result += bytes([byte_code1[i] ^ byte_code2[i]])
@@ -52,7 +54,8 @@ def frequency_score(code):
             code_score *= 0.0001
     return code_score
 
-def bytes_to_binary(bytes_code): # Changes bytes object to a binary string
+# Changes bytes object to a binary string
+def bytes_to_binary(bytes_code):
     result = ""
     for i in range(len(bytes_code)):
         new_bin = str(bin(bytes_code[i]))[2:]
@@ -61,7 +64,8 @@ def bytes_to_binary(bytes_code): # Changes bytes object to a binary string
         result += new_bin
     return result
 
-def edit_distance(bytes1,bytes2): # finds edit distance between 2 equal-length bytes objects
+# finds edit distance between 2 equal-length bytes objects
+def edit_distance(bytes1,bytes2):
     binary_str1 = bytes_to_binary(bytes1)
     binary_str2 = bytes_to_binary(bytes2)
     distance = 0
@@ -69,6 +73,18 @@ def edit_distance(bytes1,bytes2): # finds edit distance between 2 equal-length b
         if binary_str1[i] != binary_str2[i]:
             distance += 1
     return distance
+
+# Gets average edit distance between all keysize chunks in bytes_code
+# Returns average divided by keysize to normalize
+# Throws away some bytes at the end of bytes code
+def avg_edit_distance(bytes_code, keysize):
+    chunks = []
+    for i in range(0, len(bytes_code) - keysize, keysize):
+        chunks.append(bytes_code[i:i+keysize])
+    total_distance = 0
+    for i in range(len(chunks)-1):
+        total_distance += edit_distance(chunks[i], chunks[i + 1])
+    return total_distance / len(chunks) / keysize
 
 # Returns list of bytes objects where the first object is the first byte of
 # every keysize block, the second object is the second byte, etc
@@ -94,19 +110,42 @@ for line in b64_codes:
 # Get Hamming Distances
 normalized_edit_distances = []
 for keysize in range(2, 41):
-    chunk_one = bytes_code[0:keysize]
-    chunk_two = bytes_code[keysize:keysize*2]
-    edit_dist = edit_distance(chunk_one, chunk_two)
-    normalized_edit_distances.append(edit_dist/float(keysize))
+    normalized_edit_distances.append(avg_edit_distance(bytes_code, keysize))
 
 # Get keys with lowest Hamming Distances
-best_keys = []
+best_keysizes = []
 for i in range(3):
     min_distance = min(normalized_edit_distances)
     min_distance_key = normalized_edit_distances.index(min_distance) + 2
-    best_keys.append(min_distance_key)
+    best_keysizes.append(min_distance_key)
     normalized_edit_distances[min_distance_key - 2] = 100
 
-for key in best_keys:
+# Gets the best key of each keysize
+best_keys = {}
+for key in best_keysizes:
+    best_of_size = b""
+    total_score = 0
+    # Makes blocks of first byte of each keysize chunk, second, so on
     blocks = make_transposed_blocks(bytes_code, key)
-    
+    for block in blocks:
+        # For each block, run single-char XOR detection algorithm
+        scores = {}
+        for a in range(256):
+            decoder_bytes = bytes([a])*len(block)
+            result_bytes = binary_xOR(block,decoder_bytes)
+            score = frequency_score(result_bytes[0:100])
+            scores[score] = bytes([a])
+        # Add single-char key with best score to the full key
+        max_score = max(scores.keys())
+        best_of_size += scores[max_score]
+        total_score += max_score
+    # Save normalized score and full key
+    best_keys[total_score/key] = best_of_size
+
+# Print out best key and diciphered text
+best_score = max(best_keys.keys())
+key = best_keys[best_score]
+print(key)
+decoder_bytes = key * (len(bytes_code)//len(key)) + key
+decoder_bytes = decoder_bytes[:len(bytes_code)]
+print(binary_xOR(bytes_code,decoder_bytes))
