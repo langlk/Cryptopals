@@ -1,5 +1,6 @@
 # Cryptopals
 # Set 1 Challenge 6
+import base64
 
 def binary_xOR(byte_code1,byte_code2): # takes two bytes objects, returns XOR of them as bytes object
     result = b''
@@ -69,37 +70,33 @@ def edit_distance(bytes1,bytes2): # finds edit distance between 2 equal-length b
             distance += 1
     return distance
 
-test1 = b"this is a test"
-test2 = b"wokka wokka!!!"
-print(edit_distance(test2,test1))
+# Open file, change lines from b64 to bytes
+b64_codes = open('Challenge6Code.txt', 'r')
+bytes_code = b""
+for line in b64_codes:
+    bytes_code += base64.b64decode(line[0:-1])
+
+# Get Hamming Distances
+normalized_edit_distances = []
+for keysize in range(2, 41):
+    chunk_one = bytes_code[0:keysize]
+    chunk_two = bytes_code[keysize:keysize*2]
+    edit_dist = edit_distance(chunk_one, chunk_two)
+    normalized_edit_distances.append(edit_dist/float(keysize))
+
+# Get keys with lowest Hamming Distances
+best_keys = []
+for i in range(3):
+    min_distance = min(normalized_edit_distances)
+    min_distance_key = normalized_edit_distances.index(min_distance) + 2
+    best_keys.append(min_distance_key)
+    normalized_edit_distances[min_distance_key - 2] = 100
 
 #SO NOT FINISHED YET
 # def make_blocks(code_string,keysize): # code_string is binary, keysize in bytes
 #   block_length = keysize*8 # keysize is in bytes, change to bits
 #   keysize_blocks = [code_string[i:i+block_length] for i in range(0, len(code_string), block_length)]
 #   transposed_blocks = []
-#
-#
-# codes = open('Challenge6Codes.txt', 'r')
-# code = ""
-# for line in codes:
-#     code += line[0:-1]
-# binary_code = base64_to_binary(code)
-#
-# print(binary_code)
-# # Get Hamming Distances
-# normalized_edit_distances = []
-# for keysize in range(2,41):
-#   chunk_one = binary_code[0:keysize*8]
-#   chunk_two = binary_code[keysize*8:keysize*8*2]
-#   edit_dist = edit_distance(chunk_one,chunk_two)
-#   normalized_edit_distances.append(edit_dist/float(keysize))
-# # Get 3 keysizes with the smallest Hamming Distance
-# keysizes = []
-# for i in range(3):
-#   min_distance_key = normalized_edit_distances.index(min(normalized_edit_distances)) + 2
-#   keysizes.append(min_distance_key)
-#   normalized_edit_distances[min_distance_key - 2] = 100
-#
+
 # for keysize in keysizes:
 #   make_blocks(binary_code,keysize)
