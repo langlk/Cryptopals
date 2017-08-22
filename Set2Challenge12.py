@@ -62,11 +62,15 @@ def detectBlockSize():
 blocksize = detectBlockSize()
 is_ECB = guess_ECB(oracle_function(b'0'*100), blocksize)
 
-secret_message = b'0' * (blocksize - 1)
-encoded_blocks = []
-for i in range(256):
-    test_block = secret_message + bytes([i])
-    encoded_message = oracle_function(test_block)
-    encoded_blocks.append(encoded_message[:16])
-encoded_one_less = oracle_function(b'0' * (blocksize - 1))
-print(bytes([encoded_blocks.index(encoded_one_less[:16])]))
+result = b''
+for j in range(1, 17):
+    test_message = b'0' * (blocksize - j) + result
+    encoded_blocks = []
+    for i in range(256):
+        test_block = test_message + bytes([i])
+        encoded_message = oracle_function(test_block)
+        encoded_blocks.append(encoded_message[:16])
+    encoded_one_less = oracle_function(test_message[:blocksize-j])[:16]
+    answer = bytes([encoded_blocks.index(encoded_one_less)])
+    result += answer
+print(result)
