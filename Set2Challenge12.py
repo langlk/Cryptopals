@@ -36,8 +36,8 @@ def random_encode(message):
 
 def guess_ECB(message, blocksize):
     blocks = {}
-    for i in range(0, len(encoded_message), blocksize):
-        block = encoded_message[i:i + blocksize]
+    for i in range(0, len(message), blocksize):
+        block = message[i:i + blocksize]
         if block in blocks:
             return True
         else:
@@ -59,4 +59,14 @@ def detectBlockSize():
             return i
     return -1
 
-print("blocksize is " + str(detectBlockSize()))
+blocksize = detectBlockSize()
+is_ECB = guess_ECB(oracle_function(b'0'*100), blocksize)
+
+secret_message = b'0' * (blocksize - 1)
+encoded_blocks = []
+for i in range(256):
+    test_block = secret_message + bytes([i])
+    encoded_message = oracle_function(test_block)
+    encoded_blocks.append(encoded_message[:16])
+encoded_one_less = oracle_function(b'0' * (blocksize - 1))
+print(bytes([encoded_blocks.index(encoded_one_less[:16])]))
