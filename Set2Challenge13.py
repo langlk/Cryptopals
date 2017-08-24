@@ -57,3 +57,13 @@ def profile_for(email):
 test = profile_for("kels@mail.com")
 print(test)
 print(parse_key_val(test))
+
+# need to figure out ciphertext that produces "&role=admin" without being able to feed & or = into profile_for
+test_email_1 = "kels@mail.com"
+test_encode = profile_for(test_email_1)
+email_code = test_encode[:16]
+uid_role_garbage = test_encode[16:32]
+test_email_2 = ("0" * 10) + "admin" + ("\x0b" * 11)
+test_encode = profile_for(test_email_2)
+admin_chunk = test_encode[16:32]
+print(parse_key_val(email_code + uid_role_garbage + admin_chunk))
