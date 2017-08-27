@@ -59,21 +59,20 @@ def find_duplicate_end(message, zero_block, blocksize):
 def decrypt_ECB(secret_string, test_bytes, start_index, blocksize):
     secret_string_length = len(secret_string)
     result = b''
-    #for counter in range(0, int(secret_string_length/blocksize)):
-    for j in range(1, blocksize + 1):
-        test_message = test_bytes + b'0' * (blocksize - j) + result
-        encoded_blocks = []
-        for i in range(256):
-            test_block = test_message + bytes([i])
-            encoded_message = oracle_function(test_block)
-            encoded_blocks.append(encoded_message[start_index:start_index +  blocksize])
-        encoded_one_less = oracle_function(test_message[:len(test_bytes) + blocksize-j])[start_index:start_index + blocksize]
-        answer = bytes([encoded_blocks.index(encoded_one_less)])
-        result += answer
-        print(result)
-        if result[-1] in range (1, blocksize + 1) and secret_string_length-len(result) <= blocksize :
-             return result
-    # result = test_bytes + "Rollin in my 5."
+    for counter in range(0, int(secret_string_length/blocksize)):
+        for j in range(1, blocksize + 1):
+            test_message = test_bytes + b'0' * (blocksize - j) + result
+            encoded_blocks = []
+            for i in range(256):
+                test_block = test_message + bytes([i])
+                encoded_message = oracle_function(test_block)
+                encoded_blocks.append(encoded_message[start_index:start_index + (blocksize * (counter + 1))])
+            encoded_one_less = oracle_function(test_message[:len(test_bytes) + blocksize-j])[start_index:start_index + (blocksize * (counter + 1))]
+            answer = bytes([encoded_blocks.index(encoded_one_less)])
+            result += answer
+            print(result)
+            if result[-1] in range (1, blocksize + 1) and secret_string_length-len(result) <= blocksize :
+                 return result
 
 test_bytes = b'0' * 100
 encrypted_message = oracle_function(test_bytes)
@@ -94,4 +93,4 @@ for i in range(1, 16):
 print(len(test_bytes))
 secret_string = encrypted_message[end_duplicate:]
 print(decrypt_ECB(secret_string, test_bytes, end_duplicate, 16))
-#0000000000000000(end_duplicate)[secret_string]
+# Sometimes this isn't working - returns a bunch of 0 bytes. Not sure why, should probably fix
