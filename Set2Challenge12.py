@@ -59,27 +59,26 @@ def detectBlockSize():
             return i
     return -1
 
+def decrypt_ECB(secret_string, blocksize):
+    secret_string_length = len(secret_string)
+    result = b''
+    for counter in range(0, int(secret_string_length/blocksize)):
+        end_index = counter * blocksize + blocksize
+        for j in range(1, blocksize + 1):
+            test_message = b'0' * (blocksize - j) + result
+            encoded_blocks = []
+            for i in range(256):
+                test_block = test_message + bytes([i])
+                encoded_message = oracle_function(test_block)
+                encoded_blocks.append(encoded_message[:counter*blocksize + blocksize])
+            encoded_one_less = oracle_function(test_message[:blocksize-j])[:blocksize*counter + blocksize]
+            answer = bytes([encoded_blocks.index(encoded_one_less)])
+            result += answer
+            if result[-1] in range (1, blocksize + 1) and secret_string_length-len(result) <= blocksize :
+                 return result
+
 blocksize = detectBlockSize()
 is_ECB = guess_ECB(oracle_function(b'0'*100), blocksize)
 secret_string = oracle_function(b"")
 secret_string_length = len(secret_string)
-print(secret_string_length)
-
-result = b''
-for counter in range(0, int(secret_string_length/blocksize)):
-    end_index = counter * blocksize + blocksize
-    for j in range(1, blocksize + 1):
-        test_message = b'0' * (blocksize - j) + result
-        encoded_blocks = []
-        for i in range(256):
-            test_block = test_message + bytes([i])
-            encoded_message = oracle_function(test_block)
-            encoded_blocks.append(encoded_message[:counter*blocksize + blocksize])
-        encoded_one_less = oracle_function(test_message[:blocksize-j])[:blocksize*counter + blocksize]
-        answer = bytes([encoded_blocks.index(encoded_one_less)])
-        result += answer
-        print(result)
-        if result[-1] in range (1, blocksize + 1) and secret_string_length-len(result) <= blocksize :
-             print(result)
-             sys.exit()
-print(result)
+print(decrypt_ECB(secret_string, 16))
