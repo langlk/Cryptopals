@@ -63,7 +63,6 @@ def decrypt_ECB(secret_string, blocksize):
     secret_string_length = len(secret_string)
     result = b''
     for counter in range(0, int(secret_string_length/blocksize)):
-        end_index = counter * blocksize + blocksize
         for j in range(1, blocksize + 1):
             test_message = b'0' * (blocksize - j) + result
             encoded_blocks = []
