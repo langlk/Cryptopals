@@ -70,27 +70,25 @@ def decrypt_ECB(secret_string, test_bytes, start_index, blocksize):
             encoded_one_less = oracle_function(test_message[:len(test_bytes) + blocksize-j])[start_index:start_index + (blocksize * (counter + 1))]
             answer = bytes([encoded_blocks.index(encoded_one_less)])
             result += answer
-            print(result)
             if result[-1] in range (1, blocksize + 1) and secret_string_length-len(result) <= blocksize :
                  return result
+
 
 test_bytes = b'0' * 100
 encrypted_message = oracle_function(test_bytes)
 zero_block_encrypted = get_duplicate(encrypted_message, 16)
-print(zero_block_encrypted)
 
 # we want to find the first block after the random prefix that isn't a zero_block
 end_duplicate = find_duplicate_end(encrypted_message, zero_block_encrypted, 16)
 # Need to move the non-duplicate to the start of a block
 for i in range(1, 16):
-    test_bytes = test_bytes + (b'0' * i)
+    test_bytes = test_bytes + b'0'
     encrypted_message = oracle_function(test_bytes)
     new_end_duplicate = find_duplicate_end(encrypted_message, zero_block_encrypted, 16)
     if new_end_duplicate > end_duplicate:
         end_duplicate = new_end_duplicate
         break
 
-print(len(test_bytes))
 secret_string = encrypted_message[end_duplicate:]
 print(decrypt_ECB(secret_string, test_bytes, end_duplicate, 16))
 # Sometimes this isn't working - returns a bunch of 0 bytes. Not sure why, should probably fix
