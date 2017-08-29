@@ -91,4 +91,3 @@ for i in range(1, 16):
 
 secret_string = encrypted_message[end_duplicate:]
 print(decrypt_ECB(secret_string, test_bytes, end_duplicate, 16))
-# Sometimes this isn't working - returns a bunch of 0 bytes. Not sure why, should probably fix
