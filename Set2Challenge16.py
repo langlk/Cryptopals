@@ -91,4 +91,8 @@ def oracle_decrypt_function(message):
     user_info = unpad_PKCS_7(decrypted_message)
     return b";admin=true;" in user_info
 
-print(oracle_decrypt_function(oracle_encrypt_function("Hello")))
+test_code = oracle_encrypt_function("0000:admin<true:")
+bytes_to_change = test_code[16*2:16*3]
+changed_bytes = binary_xOR(bytes_to_change, b'\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x01')
+edited_message = test_code[:16*2] + changed_bytes + test_code[16*3:]
+print(oracle_decrypt_function(edited_message))
