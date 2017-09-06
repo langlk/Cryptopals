@@ -83,11 +83,14 @@ def padding_oracle(message):
 
 ciphertext = oracle_encrypt()
 
-# figure out char at secret_message[-1]
+
 message_bytes = b""
 ciphertext_copy = ciphertext
+# loop for each 16-byte block
 while len(ciphertext_copy) >= 32:
+    # loop for each byte of block
     for j in range(1, 17):
+        # loop for each possible character
         for i in range(256):
             if i != j or (len(ciphertext_copy) == len(ciphertext) and len(message_bytes) > 0 and j == message_bytes[-1]):
                 test_block = binary_xOR(ciphertext_copy[-(16 + j):-(16)], bytes([i]) + message_bytes)
