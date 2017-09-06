@@ -62,10 +62,13 @@ def pad_PKCS_7(message, blocksize):
     return message + padding
 
 def is_PKCS_7(plainbytes):
-    for byte in plainbytes[len(plainbytes) - plainbytes[-1]:]:
-        if byte != plainbytes[-1]:
-            return False
-    return True
+    if len(plainbytes) > plainbytes[-1] and plainbytes[-1] != 0:
+        for byte in plainbytes[len(plainbytes) - plainbytes[-1]:]:
+            if byte != plainbytes[-1]:
+                return False
+        return True
+    else:
+        return False
 
 RANDOM_KEY = random_bytes(16)
 POSSIBLE_MESSAGES = [b"MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=", b"MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=", b"MDAwMDAyUXVpY2sgdG8gdGhlIHBvaW50LCB0byB0aGUgcG9pbnQsIG5vIGZha2luZw==", b"MDAwMDAzQ29va2luZyBNQydzIGxpa2UgYSBwb3VuZCBvZiBiYWNvbg==", b"MDAwMDA0QnVybmluZyAnZW0sIGlmIHlvdSBhaW4ndCBxdWljayBhbmQgbmltYmxl", b"MDAwMDA1SSBnbyBjcmF6eSB3aGVuIEkgaGVhciBhIGN5bWJhbA==", b"MDAwMDA2QW5kIGEgaGlnaCBoYXQgd2l0aCBhIHNvdXBlZCB1cCB0ZW1wbw==", b"MDAwMDA3SSdtIG9uIGEgcm9sbCwgaXQncyB0aW1lIHRvIGdvIHNvbG8=", b"MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=", b"MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93"]
@@ -78,6 +81,15 @@ def padding_oracle(message):
     decrypted_message = CBC_decrypt(message, RANDOM_KEY, 16)
     return is_PKCS_7(decrypted_message)
 
-test_message = oracle_encrypt()
-print(CBC_decrypt(test_message, RANDOM_KEY, 16))
-print(padding_oracle(test_message))
+ciphertext = oracle_encrypt()
+
+# figure out char at secret_message[-1]
+
+for i in range(256):
+    test_block = binary_xOR(ciphertext[-17:-16], bytes([i]))
+    test_block = binary_xOR(test_block, bytes([1]))
+    test_ciphertext = ciphertext[:-17] + test_block + ciphertext[-16:]
+    if (padding_oracle(test_ciphertext)):
+        print("Possible answer:", i)
+        print(CBC_decrypt(test_ciphertext, RANDOM_KEY, 16))
+print(CBC_decrypt(ciphertext, RANDOM_KEY, 16)[-1])
