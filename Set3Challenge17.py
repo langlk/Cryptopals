@@ -66,3 +66,18 @@ def is_PKCS_7(plainbytes):
         if byte != plainbytes[-1]:
             return False
     return True
+
+RANDOM_KEY = random_bytes(16)
+POSSIBLE_MESSAGES = [b"MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=", b"MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=", b"MDAwMDAyUXVpY2sgdG8gdGhlIHBvaW50LCB0byB0aGUgcG9pbnQsIG5vIGZha2luZw==", b"MDAwMDAzQ29va2luZyBNQydzIGxpa2UgYSBwb3VuZCBvZiBiYWNvbg==", b"MDAwMDA0QnVybmluZyAnZW0sIGlmIHlvdSBhaW4ndCBxdWljayBhbmQgbmltYmxl", b"MDAwMDA1SSBnbyBjcmF6eSB3aGVuIEkgaGVhciBhIGN5bWJhbA==", b"MDAwMDA2QW5kIGEgaGlnaCBoYXQgd2l0aCBhIHNvdXBlZCB1cCB0ZW1wbw==", b"MDAwMDA3SSdtIG9uIGEgcm9sbCwgaXQncyB0aW1lIHRvIGdvIHNvbG8=", b"MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=", b"MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93"]
+ACTUAL_MESSAGE = POSSIBLE_MESSAGES[randint(0, len(POSSIBLE_MESSAGES) - 1)]
+
+def oracle_encrypt():
+    return CBC_encrypt(pad_PKCS_7(ACTUAL_MESSAGE, 16), RANDOM_KEY, 16)
+
+def padding_oracle(message):
+    decrypted_message = CBC_decrypt(message, RANDOM_KEY, 16)
+    return is_PKCS_7(decrypted_message)
+
+test_message = oracle_encrypt()
+print(CBC_decrypt(test_message, RANDOM_KEY, 16))
+print(padding_oracle(test_message))
