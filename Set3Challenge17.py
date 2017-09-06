@@ -84,12 +84,23 @@ def padding_oracle(message):
 ciphertext = oracle_encrypt()
 
 # figure out char at secret_message[-1]
+message_bytes = b""
 
-for i in range(256):
-    test_block = binary_xOR(ciphertext[-17:-16], bytes([i]))
-    test_block = binary_xOR(test_block, bytes([1]))
-    test_ciphertext = ciphertext[:-17] + test_block + ciphertext[-16:]
-    if (padding_oracle(test_ciphertext)):
-        print("Possible answer:", i)
-        print(CBC_decrypt(test_ciphertext, RANDOM_KEY, 16))
-print(CBC_decrypt(ciphertext, RANDOM_KEY, 16)[-1])
+for j in range(1, 17):
+    for i in range(256):
+        if i != j or (len(message_bytes) > 0 and j == message_bytes[-1]):
+            test_block = binary_xOR(ciphertext[-(16 + j):-(16)], bytes([i]) + message_bytes)
+            test_block = binary_xOR(test_block, bytes([j]) * j)
+            test_ciphertext = ciphertext[:-(16 + j)] + test_block + ciphertext[-16:]
+            if (padding_oracle(test_ciphertext)):
+                message_bytes = bytes([i]) + message_bytes
+                print(message_bytes)
+                print(CBC_decrypt(test_ciphertext, RANDOM_KEY, 16))
+                break
+
+if message_bytes == CBC_decrypt(ciphertext, RANDOM_KEY, 16)[-16:]:
+    print("Correct!")
+else:
+    print("Nope!")
+print("Found:",message_bytes)
+print("Answer:",CBC_decrypt(ciphertext, RANDOM_KEY, 16)[-16:])
