@@ -62,7 +62,7 @@ def pad_PKCS_7(message, blocksize):
     return message + padding
 
 def is_PKCS_7(plainbytes):
-    if len(plainbytes) > plainbytes[-1] and plainbytes[-1] != 0:
+    if len(plainbytes) >= plainbytes[-1] and plainbytes[-1] != 0:
         for byte in plainbytes[len(plainbytes) - plainbytes[-1]:]:
             if byte != plainbytes[-1]:
                 return False
@@ -85,22 +85,23 @@ ciphertext = oracle_encrypt()
 
 # figure out char at secret_message[-1]
 message_bytes = b""
+ciphertext_copy = ciphertext
+while len(ciphertext_copy) >= 32:
+    for j in range(1, 17):
+        for i in range(256):
+            if i != j or (len(ciphertext_copy) == len(ciphertext) and len(message_bytes) > 0 and j == message_bytes[-1]):
+                test_block = binary_xOR(ciphertext_copy[-(16 + j):-(16)], bytes([i]) + message_bytes)
+                test_block = binary_xOR(test_block, bytes([j]) * j)
+                test_ciphertext = ciphertext_copy[:-(16 + j)] + test_block + ciphertext_copy[-16:]
+                if (padding_oracle(test_ciphertext)):
+                    message_bytes = bytes([i]) + message_bytes
+                    break
+    ciphertext_copy = ciphertext_copy[:-16]
 
-for j in range(1, 17):
-    for i in range(256):
-        if i != j or (len(message_bytes) > 0 and j == message_bytes[-1]):
-            test_block = binary_xOR(ciphertext[-(16 + j):-(16)], bytes([i]) + message_bytes)
-            test_block = binary_xOR(test_block, bytes([j]) * j)
-            test_ciphertext = ciphertext[:-(16 + j)] + test_block + ciphertext[-16:]
-            if (padding_oracle(test_ciphertext)):
-                message_bytes = bytes([i]) + message_bytes
-                print(message_bytes)
-                print(CBC_decrypt(test_ciphertext, RANDOM_KEY, 16))
-                break
-
-if message_bytes == CBC_decrypt(ciphertext, RANDOM_KEY, 16)[-16:]:
+if message_bytes == CBC_decrypt(ciphertext, RANDOM_KEY, 16):
     print("Correct!")
 else:
     print("Nope!")
-print("Found:",message_bytes)
-print("Answer:",CBC_decrypt(ciphertext, RANDOM_KEY, 16)[-16:])
+print("Found:", message_bytes, len(message_bytes))
+print("Answer:", CBC_decrypt(ciphertext, RANDOM_KEY, 16),len(CBC_decrypt(ciphertext, RANDOM_KEY, 16)))
+print("Original:", ACTUAL_MESSAGE)
