@@ -17,6 +17,7 @@ def AES_ECB_encrypt(bytes_code, key):
     aes_cipher = AES.new(key, AES.MODE_ECB)
     return aes_cipher.encrypt(bytes_code)
 
+# Encrypt/Decrypt CTR mode
 def CTR_mode(key, nonce, blocksize, message):
     ciphertext = b''
     counter = 0
