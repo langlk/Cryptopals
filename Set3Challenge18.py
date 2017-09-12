@@ -21,7 +21,7 @@ def CTR_mode(key, nonce, blocksize, message):
     ciphertext = b''
     counter = 0
     while len(ciphertext) < len(message):
-        key_stream = AES_ECB_encrypt(nonce + bytes([counter]) + (b'\x00' * 7), key)
+        key_stream = AES_ECB_encrypt(nonce + (counter).to_bytes(8, byteorder="little"), key)
         block = message[blocksize * counter:blocksize * counter + blocksize]
         ciphertext += binary_xOR(key_stream[:len(block)], block)
         counter += 1
