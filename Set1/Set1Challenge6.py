@@ -101,51 +101,54 @@ def make_transposed_blocks(bytes_code, keysize):
             j = 0
     return transposed_blocks
 
+def break_xOR(bytes_code):
+    # Get Hamming Distances
+    normalized_edit_distances = []
+    for keysize in range(2, 41):
+        normalized_edit_distances.append(avg_edit_distance(bytes_code, keysize))
+
+    # Get keys with lowest Hamming Distances
+    best_keysizes = []
+    for i in range(3):
+        min_distance = min(normalized_edit_distances)
+        min_distance_key = normalized_edit_distances.index(min_distance) + 2
+        best_keysizes.append(min_distance_key)
+        normalized_edit_distances[min_distance_key - 2] = 100
+
+    # Gets the best key of each keysize
+    best_keys = {}
+    for key in best_keysizes:
+        best_of_size = b""
+        total_score = 0
+        # Makes blocks of first byte of each keysize chunk, second, so on
+        blocks = make_transposed_blocks(bytes_code, key)
+        for block in blocks:
+            # For each block, run single-char XOR detection algorithm
+            scores = {}
+            for a in range(256):
+                decoder_bytes = bytes([a])*len(block)
+                result_bytes = binary_xOR(block,decoder_bytes)
+                score = frequency_score(result_bytes[0:100])
+                scores[score] = bytes([a])
+            # Add single-char key with best score to the full key
+            max_score = max(scores.keys())
+            best_of_size += scores[max_score]
+            total_score += max_score
+        # Save normalized score and full key
+        best_keys[total_score/key] = best_of_size
+
+    # Print out best key and diciphered text
+    best_score = max(best_keys.keys())
+    key = best_keys[best_score]
+    print(key)
+    decoder_bytes = key * (len(bytes_code)//len(key)) + key
+    decoder_bytes = decoder_bytes[:len(bytes_code)]
+    print(binary_xOR(bytes_code,decoder_bytes))
+
 # Open file, change lines from b64 to bytes
 b64_codes = open('Challenge6Code.txt', 'r')
 bytes_code = b""
 for line in b64_codes:
     bytes_code += base64.b64decode(line[0:-1])
 
-# Get Hamming Distances
-normalized_edit_distances = []
-for keysize in range(2, 41):
-    normalized_edit_distances.append(avg_edit_distance(bytes_code, keysize))
-
-# Get keys with lowest Hamming Distances
-best_keysizes = []
-for i in range(3):
-    min_distance = min(normalized_edit_distances)
-    min_distance_key = normalized_edit_distances.index(min_distance) + 2
-    best_keysizes.append(min_distance_key)
-    normalized_edit_distances[min_distance_key - 2] = 100
-
-# Gets the best key of each keysize
-best_keys = {}
-for key in best_keysizes:
-    best_of_size = b""
-    total_score = 0
-    # Makes blocks of first byte of each keysize chunk, second, so on
-    blocks = make_transposed_blocks(bytes_code, key)
-    for block in blocks:
-        # For each block, run single-char XOR detection algorithm
-        scores = {}
-        for a in range(256):
-            decoder_bytes = bytes([a])*len(block)
-            result_bytes = binary_xOR(block,decoder_bytes)
-            score = frequency_score(result_bytes[0:100])
-            scores[score] = bytes([a])
-        # Add single-char key with best score to the full key
-        max_score = max(scores.keys())
-        best_of_size += scores[max_score]
-        total_score += max_score
-    # Save normalized score and full key
-    best_keys[total_score/key] = best_of_size
-
-# Print out best key and diciphered text
-best_score = max(best_keys.keys())
-key = best_keys[best_score]
-print(key)
-decoder_bytes = key * (len(bytes_code)//len(key)) + key
-decoder_bytes = decoder_bytes[:len(bytes_code)]
-print(binary_xOR(bytes_code,decoder_bytes))
+break_xOR(bytes_code)
