@@ -171,10 +171,12 @@ def break_xOR(bytes_code):
 # Set-up
 RANDOM_KEY = random_bytes(16)
 NONCE = b'\x00' * 8
-plaintexts = open("Challenge19Codes.txt", "r")
+plaintexts = open("Set3/Challenge19Codes.txt", "r")
+ciphertext_file = open("Set3/Challenge19Ciphers.txt", "w")
 ciphertexts = []
 for line in plaintexts:
     ciphertexts.append(CTR_mode(RANDOM_KEY, NONCE, 16, base64.b64decode(line.strip())))
+    ciphertext_file.write(str(CTR_mode(RANDOM_KEY, NONCE, 16, base64.b64decode(line.strip()))) + "\n")
 
 # Solving
 first_blocks = b''
@@ -188,5 +190,7 @@ for text in ciphertexts:
 decoded_first_block = break_xOR(first_blocks)
 decoded_second_block = break_xOR(second_blocks)
 
+output = open("Set3/Challenge19Result.txt", "w")
 for i in range(int(len(decoded_first_block) / 16)):
-    print(decoded_first_block[i*16:i*16 + 16] + decoded_second_block[i*16:i*16 + 16])
+    output.write(str(decoded_first_block[i*16:i*16 + 16] + decoded_second_block[i*16:i*16 + 16]) + "\n")
+output.close()
