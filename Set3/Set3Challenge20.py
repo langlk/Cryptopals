@@ -1,7 +1,7 @@
 # Cryptopals
-# Set 3 Challenge 19
+# Set 3 Challenge 20
 
-# Break Fixed-Nonce CTR using substitutions
+# Break Fixed-Nonce CTR Statistically
 
 import base64
 from Crypto.Cipher import AES
@@ -124,20 +124,8 @@ def make_transposed_blocks(bytes_code, keysize):
             j = 0
     return transposed_blocks
 
-def break_xOR(bytes_code):
-    # Get Hamming Distances
-    normalized_edit_distances = []
-    for keysize in range(2, 41):
-        normalized_edit_distances.append(avg_edit_distance(bytes_code, keysize))
-
-    # Get keys with lowest Hamming Distances
-    best_keysizes = []
-    for i in range(3):
-        min_distance = min(normalized_edit_distances)
-        min_distance_key = normalized_edit_distances.index(min_distance) + 2
-        best_keysizes.append(min_distance_key)
-        normalized_edit_distances[min_distance_key - 2] = 100
-
+def break_xOR(bytes_code, keysize):
+    best_keysizes = [keysize]
     # Gets the best key of each keysize
     best_keys = {}
     for key in best_keysizes:
@@ -171,72 +159,22 @@ def break_xOR(bytes_code):
 # Set-up
 RANDOM_KEY = random_bytes(16)
 NONCE = b'\x00' * 8
-plaintexts = open("Set3/Challenge19Codes.txt", "r")
-ciphertext_file = open("Set3/Challenge19Ciphers.txt", "w")
+plaintexts = open("Set3/Challenge20Codes.txt", "r")
 ciphertexts = []
+min_length = 900
 for line in plaintexts:
     ciphertexts.append(CTR_mode(RANDOM_KEY, NONCE, 16, base64.b64decode(line.strip())))
-    ciphertext_file.write(str(CTR_mode(RANDOM_KEY, NONCE, 16, base64.b64decode(line.strip()))) + "\n")
+    if len(ciphertexts[-1]) < min_length:
+        min_length = len(ciphertexts[-1])
 
-# Solving
-first_blocks = b''
-second_blocks = b''
+ciphertext = b''
 for text in ciphertexts:
-    first_blocks += text[:16]
-    second_blocks += text[16:32]
-    if len(text) < 32:
-        second_blocks += b'0' * (32 - len(text))
+    substring = text[0:min_length]
+    ciphertext += text[0:min_length]
+result = break_xOR(ciphertext, min_length)
 
-decoded_first_block = break_xOR(first_blocks)
-decoded_second_block = break_xOR(second_blocks)
-
-output = open("Set3/Challenge19Result.txt", "w")
-for i in range(int(len(decoded_first_block) / 16)):
-    output.write(str(decoded_first_block[i*16:i*16 + 16] + decoded_second_block[i*16:i*16 + 16]) + "\n")
-output.close()
-
-"""
-Answer:
-
-b'I have met them at close of day'
-b'Coming with vivid faces'
-b'From counter or desk among grey'
-b'Eighteenth-century houses.
-b'I have passed with a nod of the head'
-b'Or polite meaningless words,'
-b'Or have lingered awhile and said'
-b'Polite meaningless words,'
-b'And thought before I had done'
-b'Of a mocking tale or a gibe'
-b'To please a companion'
-b'Around the fire at the club,'
-b'Being certain that they and I'
-b'But lived where motley is worn:'
-b'All changed, changed utterly:'
-b'A terrible beauty is born.'
-b"That woman's days were spent"
-b'In ignorant good will,'
-b'Her nights in argument'
-b'Until her voice grew shrill.'
-b'What voice more sweet than hers'
-b'When young and beautiful,'
-b'She rode to harriers?'
-b'This man had kept a school'
-b'And rode our winged horse.'
-b'This other his helper and friend'
-b'Was coming into his force;'
-b'He might have won fame in the end,'
-b'So sensitive his nature seemed'
-b'So daring and sweet his thought.'
-b'This other man I had dreamed'
-b'A drunken, vain-glorious lout.'
-b'He had Bone most bitter wrong'
-b'To some who are near my heart,'
-b'Yet I number him in the song;'
-b'He, too, has resigned his part'
-b'In the casual comedy;
-b'He, too, has been changed in his turn'
-b'Transformed utterly:'
-b'A terrible beauty is born.'
-
-"""
+i = 0
+while i < len(result):
+    print(result[i: i + min_length])
+    i = i + min_length
+print(ciphertext[0:1])
