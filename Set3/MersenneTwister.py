@@ -83,7 +83,7 @@ expected = [
                 1018023110, 3276716738, 3879985479, 3313975271, 2463934640,
                 1294333494, 12327951, 3318889349, 2650617233, 656828586
             ]
-print(len(expected))
+
 for i in range(len(expected)):
     if twister.extract_number() != expected[i]:
         print("EVERYTHING IS RUINED")
