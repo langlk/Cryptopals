@@ -23,8 +23,6 @@ class MersenneTwister:
             self.twist()
 
         y = self.mt[self.index]
-        print("Expected:")
-        print(y)
         y = y ^ y >> 11
         y = y ^ y << 7 & 2636928640
         y = y ^ y << 15 & 4022730752
@@ -42,6 +40,10 @@ class MersenneTwister:
             if y % 2 != 0:
                 self.mt[i] = self.mt[i] ^ 0x9908b0df
         self.index = 0
+
+    def set_state(self, state_array):
+        self.mt = state_array
+        self.index = 624
 
 # twister = MersenneTwister(1)
 # expected = [

@@ -4,6 +4,7 @@
 # Clone an MT19937 from output
 
 import MersenneTwister
+import random
 
 # Right shift:
 # top *shift* bits are the top *shift* of the number
@@ -31,7 +32,6 @@ def untemper_left(number, shift, magic_num):
         mask = mask << shift
         count += 1
         shifted = result << shift & magic_num
-        # shifted: first 2 shifts of shifted
         subresult = number ^ shifted
         result = result | (subresult & mask)
     return result & int('1' * 32, 2)
@@ -43,9 +43,16 @@ def untemper(number):
     number = untemper_right(number, 11)
     return number
 
-m = MersenneTwister.MersenneTwister(1)
+m = MersenneTwister.MersenneTwister(random.randint(0, 1000))
+state = []
 
-test = m.extract_number()
+for i in range(624):
+    output = m.extract_number()
+    state.append(untemper(output))
 
-print("Result:")
-print(untemper(test))
+m_copy = MersenneTwister.MersenneTwister(0)
+m_copy.set_state(state)
+
+for i in range(10):
+    print("Orginal:", m.extract_number())
+    print("Copy:   ", m_copy.extract_number())
