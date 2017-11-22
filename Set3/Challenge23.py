@@ -6,8 +6,8 @@
 import MersenneTwister
 
 # Right shift:
-# top 18 bits are the top 18 of the number
-# once you have those, you can determin everything that came after because you have the shifted part and you can just shift and xor to get the rest
+# top *shift* bits are the top *shift* of the number
+# once you have those, you can determine everything that came after because you have the shifted part and you can just shift and xor to get the rest
 def untemper_right(number, shift):
     mask = int(('1' * shift), 2) << (32 - shift)
     result = number & mask
@@ -21,6 +21,25 @@ def untemper_right(number, shift):
         result = result | result_part_three
     return result
 
+# bottom *shift* bits are the original number
+# after that, next *shift* bits are original number xored with shifted number & magic number
+def untemper_left(number, shift, magic_num):
+    mask = int('1' * shift, 2)
+    result = number & mask
+    count = 1
+    while shift * count < 32:
+        mask = mask << shift
+        count += 1
+        shifted = result << shift & magic_num
+        # shifted: first 2 shifts of shifted
+        subresult = number ^ shifted
+        result = result | (subresult & mask)
+    return result & int('1' * 32, 2)
+
 m = MersenneTwister.MersenneTwister(1)
 
 test = m.extract_number()
+
+
+print("Result:")
+print(untemper_left(2374233749, 7, 2636928640))
