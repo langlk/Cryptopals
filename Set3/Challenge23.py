@@ -36,10 +36,16 @@ def untemper_left(number, shift, magic_num):
         result = result | (subresult & mask)
     return result & int('1' * 32, 2)
 
+def untemper(number):
+    number = untemper_right(number, 18)
+    number = untemper_left(number, 15, 4022730752)
+    number = untemper_left(number, 7, 2636928640)
+    number = untemper_right(number, 11)
+    return number
+
 m = MersenneTwister.MersenneTwister(1)
 
 test = m.extract_number()
 
-
 print("Result:")
-print(untemper_left(2374233749, 7, 2636928640))
+print(untemper(test))

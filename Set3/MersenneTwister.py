@@ -23,6 +23,8 @@ class MersenneTwister:
             self.twist()
 
         y = self.mt[self.index]
+        print("Expected:")
+        print(y)
         y = y ^ y >> 11
         y = y ^ y << 7 & 2636928640
         y = y ^ y << 15 & 4022730752
