@@ -4,6 +4,7 @@
 # Create MT19937 Stream Cipher and break
 
 import MersenneTwister
+import random
 
 def binary_xOR(byte_code1,byte_code2):
     result = b''
@@ -22,6 +23,17 @@ def MT_stream_cipher(bytes_text, seed):
         output += binary_xOR(textblock, keystream)
     return output
 
-test = MT_stream_cipher(b'testing', 1)
-print(test)
-print(MT_stream_cipher(test, 1))
+def encode(message):
+    seed = random.randint(0, 65536)
+    for i in range(random.randint(5, 50)):
+        message = chr(random.randint(0, 256)) + message
+    byte_message = message.encode('utf-8')
+    return MT_stream_cipher(byte_message, seed)
+
+secret_message = encode('A' * 14)
+
+for i in range(65536):
+    output = str(MT_stream_cipher(secret_message, i))
+    if 'A' * 14 in output:
+        print("Seed is:", i)
+        print("Decoded:", output)
