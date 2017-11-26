@@ -50,7 +50,6 @@ def oracle_encrypt_function(message):
 
 def oracle_decrypt_function(message):
     user_info = CTR_mode(RANDOM_KEY, NONCE, 16, message)
-    print(user_info)
     return b";admin=true;" in user_info
 
 ciphertext = oracle_encrypt_function("test:admin<true:")
