@@ -53,8 +53,18 @@ plaintext = b''
 for line in plaintexts:
     plaintext += base64.b64decode(line)
 ciphertext = CTR_mode(RANDOM_KEY, NONCE, 16, plaintext)
-print(ciphertext)
-ciphertext_edit = CTR_edit(ciphertext, RANDOM_KEY, NONCE, 16, 8, b'TESTING 123 TESTING TESTING TESTING')
-print(len(ciphertext), len(ciphertext_edit))
-print(CTR_mode(RANDOM_KEY, NONCE, 16, ciphertext)[(16 * 8) - 2:16 * 12])
-print(CTR_mode(RANDOM_KEY, NONCE, 16, ciphertext_edit)[(16 * 8) - 2: 16* 12])
+
+recovered_plaintext = b''
+for i in range(int(len(ciphertext) / 16) + 1):
+    recovered_block = b''
+    for j in range(16):
+        for k in range(256):
+            test_edit = CTR_edit(ciphertext, RANDOM_KEY, NONCE, 16, i, recovered_block + bytes([k]))
+            if test_edit == ciphertext:
+                recovered_block += bytes([k])
+                break
+    recovered_plaintext += recovered_block
+
+print(recovered_plaintext)
+if (recovered_plaintext == plaintext):
+    print("It worked!")
