@@ -56,14 +56,11 @@ ciphertext = CTR_mode(RANDOM_KEY, NONCE, 16, plaintext)
 
 recovered_plaintext = b''
 for i in range(int(len(ciphertext) / 16) + 1):
-    recovered_block = b''
-    for j in range(16):
-        for k in range(256):
-            test_edit = CTR_edit(ciphertext, RANDOM_KEY, NONCE, 16, i, recovered_block + bytes([k]))
-            if test_edit == ciphertext:
-                recovered_block += bytes([k])
-                break
-    recovered_plaintext += recovered_block
+    known_block = b'0' * 16
+    encoded_block = CTR_edit(ciphertext, RANDOM_KEY, NONCE, 16, i, known_block)[i * 16:(i * 16) + 16]
+    keystream_block = binary_xOR(known_block, encoded_block)
+    ciphertext_block = ciphertext[i * 16:(i * 16) + 16]
+    recovered_plaintext += binary_xOR(keystream_block[:len(ciphertext_block)], ciphertext_block) 
 
 print(recovered_plaintext)
 if (recovered_plaintext == plaintext):
