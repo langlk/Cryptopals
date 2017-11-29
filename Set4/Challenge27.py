@@ -82,6 +82,11 @@ def quote_illegal_chars(string):
     string = "\'=\'".join(string.split("="))
     return string
 
+def test_ascii_compliance(message):
+    for char_num in message:
+        if char_num > 127:
+            raise ValueError("Message contained invalid ascii characters: " + str(message)[2:-1])
+
 def oracle_encrypt_function(message):
     message = quote_illegal_chars(message)
     message_bytes = b"comment1=cooking%20MCs;userdata=" + str.encode(message) + b";comment2=%20like%20a%20pound%20of%20bacon"
@@ -93,6 +98,6 @@ def oracle_decrypt_function(message):
     user_info = unpad_PKCS_7(decrypted_message)
     return b";admin=true;" in user_info
 
-test = CBC_encrypt(b'YELLOW SUBMARINE', RANDOM_KEY, 16)
+test = CBC_encrypt(b'\x00' * 16, RANDOM_KEY, 16)
 print(test)
-print(CBC_decrypt(test, RANDOM_KEY, 16))
+print(test_ascii_compliance(CBC_decrypt(test, RANDOM_KEY, 16)))
