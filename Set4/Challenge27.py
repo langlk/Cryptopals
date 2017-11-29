@@ -41,7 +41,7 @@ def CBC_encrypt(bytes_code, key, blocksize):
         final_code += encrypted_block
     return final_code
 
-# Decrypt with CBC, IV = b'\x00'*blocksize
+# Decrypt with CBC, IV = key
 def CBC_decrypt(bytes_code, key, blocksize):
     initialization_vector = key
     encrypted_block = initialization_vector
@@ -95,9 +95,30 @@ def oracle_encrypt_function(message):
 
 def oracle_decrypt_function(message):
     decrypted_message = CBC_decrypt(message, RANDOM_KEY, 16)
+    test_ascii_compliance(decrypted_message)
     user_info = unpad_PKCS_7(decrypted_message)
     return b";admin=true;" in user_info
 
-test = CBC_encrypt(b'\x00' * 16, RANDOM_KEY, 16)
-print(test)
-print(test_ascii_compliance(CBC_decrypt(test, RANDOM_KEY, 16)))
+def translate_to_bytes(string):
+    output = b''
+    while len(string) > 0:
+        if string[:2] == '\\x':
+            output += bytes([int(string[2:4], 16)])
+            string = string[4:]
+        else:
+            output += str.encode(string[0])
+            string = string[1:]
+    return output
+
+test = oracle_encrypt_function("Yellow submarine")
+modified = test[:16] + b'\x00' * 16 + test[:16]
+try:
+    oracle_decrypt_function(modified)
+except ValueError as err:
+    error_message = err.args[0]
+    err_bytes = translate_to_bytes(error_message[44:])
+    key = binary_xOR(err_bytes[:16], err_bytes[-16:])
+    print(key)
+    print(RANDOM_KEY)
+    if (key == RANDOM_KEY):
+        print("Success!")
